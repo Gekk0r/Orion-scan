@@ -15,8 +15,9 @@ def run_manager(main_window):
     degree_rotation = main_window.degree
     num_patterns = len(main_window.pattern)
     live_download = main_window.live_download_photo
-    number_of_shots = main_window.number_of_shots if not check_rotation else 360 / degree_rotation
+    number_of_shots = int(main_window.number_of_shots) if not check_rotation else 360 / degree_rotation
     last_file = []
+    wx.CallAfter(main_window.runPan.btn_single_shot.Disable)
     if main_window.erase_camera_files:
         last_file.append(0)
     if not check_rotation:
@@ -26,12 +27,14 @@ def run_manager(main_window):
     main_window.runPan.set_range_progress_bar(remaining_shots+2)
     subprocess.Popen(["rm", main_window.backup_folder+"/", "-r"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="photos")
     for i in range(len(main_window.usb_camera)):
-        wx.CallAfter(write_shoot_panel, main_window, "Erasing files from the camera(s)...")
         if main_window.backup_existing_img:
+            wx.CallAfter(write_shoot_panel, main_window, "Backupping camera " + str(i) + " files...")
             actC.save_camera_files(main_window.usb_camera[i], main_window.backup_folder, "/cam" + str(i+1) + "/")
         if main_window.erase_camera_files:
+            wx.CallAfter(write_shoot_panel, main_window, "Erasing files from the camera " + str(i) + "...")
             actC.erase_camera_files(main_window.usb_camera[i])
         else:
+            wx.CallAfter(write_shoot_panel, main_window, "Executing camera " + str(i) + " setup...")
             last_file.append(detC.last_photo(main_window.usb_camera[i]))
         if main_window.run_status == "Stop":
             wx.CallAfter(write_shoot_panel, main_window, "Stopping program...")
@@ -104,21 +107,23 @@ def run_manager(main_window):
                     #actC.download_file(main_window.usb_camera[j], tmp, last_file)
         main_window.runPan.increase_progress_bar()
         remaining_shots -= 1
-    if check_projector:
+    if  check_projector:
         wx.CallAfter(main_window.projector.project_pattern, False)
-    if check_rotation:
+    if  check_rotation:
         main_window.arduinoBoards.rotate_table(0)
         #main_window.arduinoBoards.reset_serial(# )
     if not live_download:
         wx.CallAfter(write_shoot_panel, main_window, "Downloading photos...")
         pos = 0
+        print('Remaining Shots: ' + str(remaining_shots))
         subprocess.Popen(["rm", main_window.folder + "/", "-r"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="photos")
-        for i in range(1, int((number_of_shots +1)  if not check_projector else number_of_shots * num_patterns), (1 if not check_projector else num_patterns)):
+        for i in range(1, int(number_of_shots) - remaining_shots + 1 if not check_projector else (number_of_shots - remaining_shots) * num_patterns + 1, (1 if not check_projector else num_patterns)):
             print(i)
             print("ma what?")
             print(int(number_of_shots - remaining_shots if not check_projector else (number_of_shots  - remaining_shots)* num_patterns))
             if check_rotation:
-                pos = i // num_patterns * degree_rotation
+                    pos = (i - 1) * degree_rotation
+                # pos = i // num_patterns * degree_rotation
             for j in range(len(main_window.usb_camera)):
                 if check_projector:
                     for k in range(num_patterns):
@@ -140,6 +145,7 @@ def run_manager(main_window):
     for i in range(360/degree_rotation+2, -1, -1):
         main_window.runPan.decrease_progress_bar()
         time.sleep(0.2)
+    wx.CallAfter(main_window.runPan.btn_single_shot.Enable)
     wx.CallAfter(popup.start_shoot_at_dialog, main_window)
     return
 
@@ -166,6 +172,7 @@ def write_shoot_panel(main_window, text):
 
 
 def shoot_at(main_window, degree, pattern=-1, camera=0):
+    camera = int(camera)
     degree = int(degree)
     main_window.arduinoBoards.rotate_table(degree)
     time.sleep(degree * 5.5 / 360 + 2)
@@ -182,9 +189,17 @@ def shoot_at(main_window, degree, pattern=-1, camera=0):
         wx.CallAfter(main_window.projector.project_pattern, False)
 
     print(len(main_window.usb_camera))
-    for i in range(len(main_window.usb_camera)):
-        last_photo = detC.last_photo(main_window.usb_camera[i])
-        fm.save_image(main_window, last_photo, degree, i, (main_window.pattern[pattern] if pattern != -1 else 0))
+    time.sleep(2)
+    if camera == 0:
+        for i in range(len(main_window.usb_camera)):
+            print 'Usb camera: '
+            print main_window.usb_camera
+            last_photo = detC.last_photo(main_window.usb_camera[i])
+            fm.save_image(main_window, last_photo, degree, i, (main_window.pattern[pattern] if pattern != -1 else 0))
+    else:
+        print "camera: " + str(camera - 1)
+        last_photo = detC.last_photo(main_window.usb_camera[camera - 1])
+        fm.save_image(main_window, last_photo, degree, camera - 1, (main_window.pattern[pattern] if pattern != -1 else 0))
     return
 
 

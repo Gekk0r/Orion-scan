@@ -33,6 +33,7 @@ def save_image(main_window, num , deg = 0, cam = 0 , pat = 0 , file_name_templat
     print("File name")
     print(file_name)
     print(main_window.folder)
+    print(main_window.usb_camera)
     tmp_cam = str(cam + 1)
     if len(main_window.usb_camera) <= 2:
         if cam == 0:
@@ -53,7 +54,7 @@ def save_image(main_window, num , deg = 0, cam = 0 , pat = 0 , file_name_templat
         print("Creating path")
 
     print(file_name)
-    p = subprocess.Popen(["mv", file_name[0] + "." + file_name[1], path_template + "/" + file_name_template + ".jpg"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="photos")
+    p = subprocess.Popen(["mv", file_name[0] + "." + file_name[1], path_template + "/" + file_name_template + '.' + file_name[-1]], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="photos")
     print(p.communicate())
 
     # Debug

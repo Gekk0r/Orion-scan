@@ -2,7 +2,7 @@ import serial.tools.list_ports
 from  threading import Thread
 
 
-class aruino_management:
+class arduino_management:
     time_sleep = 2
     port_table = None
     port_camera = None
@@ -27,7 +27,7 @@ class aruino_management:
         except:
             print("Connection lost")
             pass
-            return None
+            return s
         return s
 
     def connect_table(self):
@@ -71,6 +71,7 @@ class aruino_management:
     def trigger_camera(self, cam):
         if cam == 0:
             cam = "all"
+        print str(cam)
         Thread(target=self.serial_camera.write, args=(str("camera trigger " + str(cam)) + "\r\n",)).start()
         return
 

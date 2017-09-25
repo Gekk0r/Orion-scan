@@ -9,7 +9,7 @@ from wx.lib.agw.genericmessagedialog import GenericMessageDialog
 
 class camera_delay_window(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, "Camera Delay", style=wx.DEFAULT_FRAME_STYLE & ~wx.MAXIMIZE_BOX ^ wx.RESIZE_BORDER, size=(200, 65 + (len(parent.usb_camera)+1)*35))
+        wx.Frame.__init__(self, parent, -1, "Camera Delay", style=wx.DEFAULT_FRAME_STYLE & ~wx.MAXIMIZE_BOX ^ wx.RESIZE_BORDER, size=(210, 50 + (len(parent.usb_camera)+1)*35))
         self.parent = parent
         self.window_sizer = wx.BoxSizer(wx.HORIZONTAL)
         #panel = wx.Panel(self, -1)
@@ -28,15 +28,15 @@ class camera_delay_window(wx.Frame):
             #self.txt_camera_delay.append(wx.TextCtrl(self, 2*i, pos=(15, 45 + i*35)))
             wx.StaticText(self, wx.ID_ANY, label="camera {0}".format(i+1), pos=(10, 38 + i*35))
             self.txt_camera_delay.append(wx.lib.intctrl.IntCtrl(self, id=wx.ID_ANY, pos=(90, 35 + i*35), limited=True, min=0, max=8192))
-            self.btn_camera_delay_dec.append(wx.Button(self, 2*i, "-", pos=(120, 35 + i*35), size=(20, 20)))
-            self.btn_camera_delay_inc.append(wx.Button(self, 2*i + 1, "+", pos=(145, 35 + i*35), size=(20, 20)))
+            # self.btn_camera_delay_dec.append(wx.Button(self, 2*i, "-", pos=(120, 35 + i*35), size=(20, 20)))
+            # self.btn_camera_delay_inc.append(wx.Button(self, 2*i + 1, "+", pos=(145, 35 + i*35), size=(20, 20)))
 
             self.window_sizer.Add(self.txt_camera_delay[i], 1, wx.EXPAND | wx.ALL, 25)
 
-            self.Bind(wx.EVT_BUTTON, self.btn_camera_delay_inc_dec_onClick, self.btn_camera_delay_dec[i])
-            self.Bind(wx.EVT_BUTTON, self.btn_camera_delay_inc_dec_onClick, self.btn_camera_delay_inc[i])
+            # self.Bind(wx.EVT_BUTTON, self.btn_camera_delay_inc_dec_onClick, self.btn_camera_delay_dec[i])
+            # self.Bind(wx.EVT_BUTTON, self.btn_camera_delay_inc_dec_onClick, self.btn_camera_delay_inc[i])
 
-        self.btn_camera_delay_apply = wx.Button(self, wx.ID_ANY, "Apply delay", pos=(15, 35 + len(self.txt_camera_delay)*35), size=(85, 30))
+        self.btn_camera_delay_apply = wx.Button(self, wx.ID_ANY, "Apply delay", pos=(15, 35 + len(self.txt_camera_delay)*35), size=(110, 30))
         self.Bind(wx.EVT_BUTTON, self.btn_camera_delay_apply_onClick, self.btn_camera_delay_apply)
         self.Bind(wx.EVT_CLOSE, self.on_closing)
         #self.btn_camera_delay_dec.SetLabel("-")
@@ -78,6 +78,7 @@ class camera_delay_window(wx.Frame):
             print "set camera " + str(i+1) + " delay " + str(self.txt_camera_delay[i].GetValue())  # DEBUG!
             self.parent.arduinoBoards.send_command(self.parent.arduinoBoards.port_camera, "set camera " + str(i+1) + " delay " + str(self.txt_camera_delay[i].GetValue()))  # +1 FOR DEBUG!
             time.sleep(0.1)
+        self.on_closing(None)
 
     def on_closing(self, event):
         self.MakeModal(False)
@@ -145,15 +146,17 @@ class table_acceleration_window(wx.Frame):
 
 
 class shoot_at_window(wx.Frame):
-    degree_list = ["5", "10", "15", "20", "25", "30", "45", "60", "90", "120", "180"]
+    degree_list = ["0","5", "10", "15", "20", "25", "30", "45", "60", "90", "120", "180"]
     camera_list = []
     pattern_list = []
+    run_status = False
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, -1, "Shoot  at", style=wx.DEFAULT_FRAME_STYLE & ~wx.MAXIMIZE_BOX ^ wx.RESIZE_BORDER, size=(530, 80))
         self.parent = parent
         self.window_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.pattern_list = self.parent.pattern
+        self.pattern_list = ['None']
+        self.pattern_list +=  self.parent.pattern
         self.camera_list = []
         self.camera_list.append("All")
         for i in range(len(self.parent.usb_camera)):
@@ -166,7 +169,7 @@ class shoot_at_window(wx.Frame):
         self.cmb_pattern = wx.Choice(self, choices=self.pattern_list, pos=(200, 30))
         self.btn_shoot = wx.Button(self, label="Shoot",  size=(100, 32), pos=(420, 30))
 
-        self.btn_shoot.Bind(wx.EVT_BUTTON, self.shoot)
+        self.btn_shoot.Bind(wx.EVT_BUTTON, self.start_shoot_thread)
         self.Bind(wx.EVT_CLOSE, self.on_closing)
 
         self.cmb_camera.SetSelection(0)
@@ -176,19 +179,32 @@ class shoot_at_window(wx.Frame):
         self.Centre()
         self.Show()
 
-    def shoot(self, event):
+    def start_shoot_thread(self,event):
+            Thread(target=self.shoot).start()
+
+    def shoot(self):
         degree = self.degree_list[self.cmb_degree.GetSelection()]
         pattern = self.cmb_pattern.GetSelection()
         camera = self.camera_list[self.cmb_camera.GetSelection()]
+        pattern -= 1
         if camera == "All":
             camera = 0
         print("Camera")
         print(camera)
-        Thread(target=tsk.shoot_at, args=(self.parent, degree, pattern, camera,)).start()
+        self.btn_shoot.Disable()
+        self.btn_shoot.SetLabel("Please wait...")
+        self.run_status = True
+        tsk.shoot_at(self.parent, degree, pattern, camera)
+        self.btn_shoot.SetLabel("Shoot")
+        self.btn_shoot.Enable()
+        self.run_status = False
 
     def on_closing(self, event):
-        self.MakeModal(False)
-        self.Destroy()
+        if not self.run_status:
+            self.MakeModal(False)
+            self.Destroy()
+        else:
+            pass
 # if __name__ == '__main__':
 #     app = wx.App()
 #     frame = camera_delay_window(parent=None)
@@ -288,7 +304,7 @@ def check_devices_response_dialog(main_window):
 
     dialog = GenericMessageDialog(
         main_window,
-        'Does all device worked?',
+        'Did all devices work?',
         'Test',
         wx.YES | wx.NO | wx.ICON_QUESTION)
 

@@ -29,16 +29,19 @@ def portCamera(port):
                 ndev = len(features) - 3
                 for x in range(ndev):
                     port.append("usb" + (features[(x + 2) * -1]).split("usb")[1])
+    print "Detected cameras on ports: " + str(port)
     return
 
 def last_photo(port):
-    p = subprocess.Popen(["gphoto2", "--list-files", "--port", port], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print "port parameter: "
+    print port
+    p = subprocess.Popen(["gphoto2", "--list-files", "--port", str(port)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out = p.communicate()
-    #print(out)
+    print(out)
     tmp = out[0].split("#")[-1]
     i = 0
     last = ""
-    while (tmp[i]!=" "):
+    while tmp[i] != " ":
         last+= tmp[i]
         i +=1
 

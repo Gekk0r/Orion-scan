@@ -30,7 +30,7 @@ class MainWindow(wx.Frame):
         self.run_status = "Stop"
         self.degree = 5     # Rotation degree of the table
         self.monitor = 1    # Monitors where will be projected the patterns
-        self.arduinoBoards = mng.aruino_management()  # Arduino boards connected
+        self.arduinoBoards = mng.arduino_management()  # Arduino boards connected
         self.projector = mngP.projector_management()
 
         # Get background and panel colors from the config file
@@ -85,6 +85,8 @@ class MainWindow(wx.Frame):
         self.SetSizer(self.windowSizer)
         #wx.Frame(parent, style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
         #self.Fit()
+        self.cameraPan.combo.SetSelection(0)
+        self.cameraPan.onChoice(None)
         self.Centre()
         self.Show()
 
@@ -95,7 +97,6 @@ class MainWindow(wx.Frame):
         self.initModules()
 
     def init_dropdown_menu(self):
-
 
         # Menubar
         self.menubar = wx.MenuBar()
@@ -166,7 +167,7 @@ class MainWindow(wx.Frame):
         # Advanced Settings menu
 
         self.advanced_settings_menu.AppendMenu(wx.ID_ANY, "Camera", self.camera_menu, "")
-        self.advanced_settings_menu.AppendMenu(wx.ID_ANY, "Turning Table", self.table_menu, "")
+        self.advanced_settings_menu.AppendMenu(wx.ID_ANY, "Turntable", self.table_menu, "")
         self.advanced_settings_menu.AppendMenu(wx.ID_ANY, "Projector", self.projector_menu, "")
         self.advanced_settings_menu.AppendMenu(wx.ID_ANY, "Save", self.save_menu, "")
         self.advanced_settings_menu.AppendSeparator()
@@ -246,7 +247,7 @@ class MainWindow(wx.Frame):
 
     def menu_open(self, event):
         if event.GetMenu() == self.advanced_settings_menu:
-            #print("Advanced Settings menu opened!")
+            print("Advanced Settings menu opened!")
             self.lbl_camera_serial.SetText("Serial: " + str(self.arduinoBoards.port_camera))
             self.lbl_table_serial.SetText("Serial: " + str(self.arduinoBoards.port_table))
 
@@ -267,6 +268,7 @@ class MainWindow(wx.Frame):
 
         self.initTable()
         self.initCameras()
+        print self.arduinoBoards.port_camera
 
     def initCameras(self):
 
@@ -281,9 +283,10 @@ class MainWindow(wx.Frame):
 
         if answer == wx.ID_OK:
             self.arduinoBoards.connect_camera()
-            self.cameraPan.nameLabel.SetLabel("Name : " + str(self.arduinoBoards.port_camera))
+            # self.cameraPan.nameLabel.SetLabel("Name : " + str(self.arduinoBoards.port_camera))
         else:
-            self.cameraPan.nameLabel.SetLabel("Name : No module camera attached")
+            # self.cameraPan.nameLabel.SetLabel("Name : No module camera attached")
+            pass
 
     def initTable(self):
 

@@ -12,7 +12,7 @@ class TablePanel(wx.Panel):
         self.panelSizer = wx.BoxSizer(wx.VERTICAL)  # Main panel
         self.topSizer = wx.BoxSizer(wx.HORIZONTAL)  # Number of cameras
 
-        self.title = wx.StaticText(self, style=wx.ALIGN_CENTER, label="Turn table Settings")
+        self.title = wx.StaticText(self, style=wx.ALIGN_CENTER, label="Turntable Settings")
         self.degreeLabel = wx.StaticText(self, label="Degree")
         self.nameLabel = wx.StaticText(self, label="Module name : ")
         self.shootLabel = wx.StaticText(self, label="Number of shoots : 72")

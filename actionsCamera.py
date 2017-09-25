@@ -65,6 +65,7 @@ def save_camera_files(port, name, folder, degree_rotation=1, patterns=1, file_nu
             index = 0
 
 def download_file(port, file_number, name = ""):
+    print "gphoto port: " + port
     if name != "":
         file = name + ".jpg"
         p = subprocess.Popen(["gphoto2", "--get-file", str(file_number), "--filename", file, "--port", port], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="photos")
