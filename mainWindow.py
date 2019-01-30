@@ -5,11 +5,11 @@ import ConfigParser
 import manage_projector as mngP
 
 import manage_arduino as mng
-import cameraPanel as camP
-import runPanel as runP
-import tablePanel as tabP
+import panels.cameraPanel as camP
+import panels.runPanel as runP
+import panels.tablePanel as tabP
 import popup
-import extraPanel as extraP
+import panels.extraPanel as extraP
 
 
 class MainWindow(wx.Frame):

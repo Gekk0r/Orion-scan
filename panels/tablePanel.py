@@ -25,7 +25,7 @@ class TablePanel(wx.Panel):
         self.btnTest = wx.Button(self, -1, 'Test Table', pos=(0, 150))
         # Events
         self.combo.Bind(wx.EVT_CHOICE, self.onChoice)
-        self.btnTest.Bind(wx.wx.EVT_BUTTON, self.test_table)
+        self.btnTest.Bind(wx.EVT_BUTTON, self.test_table)
         self.panelSizer.Add(self.title, 0, wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 0)
         self.topSizer.Add(self.degreeLabel, 1, 20)
         self.topSizer.Add(self.combo, 1, 20)
