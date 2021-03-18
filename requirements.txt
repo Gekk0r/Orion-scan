@@ -4,7 +4,7 @@ idna==2.6
 ipaddress==1.0.17
 keyring==10.6.0
 keyrings.alt==3.0
-Pillow==5.4.1
+Pillow==8.1.1
 pygobject==3.26.1
 pyserial==3.4
 pyxdg==0.25
